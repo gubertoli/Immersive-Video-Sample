@@ -6,16 +6,19 @@ RUN if [ -n "${http_proxy}" ] ; then \
     echo "https_proxy=${https_proxy}" >> /etc/wgetrc ; \
     fi
 
+RUN sed -i -e '/^mirrorlist/d;/^#baseurl=/{s,^#,,;s,/mirror,/vault,;}' /etc/yum.repos.d/CentOS*.repo
+RUN yum clean all && yum makecache
+
 WORKDIR /home/immersive
 ARG WORKDIR=/home/immersive
 
 # Install denpendency
 RUN yum install -y centos-release-scl-rh && \
+    sed -i -e '/^mirrorlist/d;/^#baseurl=/{s,^#,,;s,/mirror,/vault,;}' /etc/yum.repos.d/CentOS*.repo && \
     yum install -y deltarpm && \
     yum install -y wget git bzip2 xz sudo devtoolset-7-gcc* && \
-    wget https://rpmfind.net/linux/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm && \
-    rpm -Uvh epel-release*rpm && \
-    yum install -y openssl centos-release-scl scl-utils gmp gmp-devel && \
+    yum install -y epel-release && \
+    yum install -y openssl scl-utils gmp gmp-devel && \
     yum install -y mpfr mpfr-devel libmpc libmpc-devel patch autoconf && \
     yum install -y libtool automake libcurl-devel libxml2-devel && \
     yum install -y libevent-devel.x86_64 openssl-devel bc redhat-lsb && \
@@ -23,7 +26,7 @@ RUN yum install -y centos-release-scl-rh && \
     yum install -y libXcursor libXcursor-devel libXi libXi-devel glm-devel && \
     yum install -y mesa-libGL mesa-libGL-devel mesa-libGLU && \
     yum install -y mesa-libGLU-devel mesa-libGLES-devel mesa-libEGL-devel && \
-    yum install -y SDL2 SDL2-devel libcurl4-openssl-dev libglfw3 && \
+    yum install -y SDL2 SDL2-devel openssl-devel && \
     yum install -y libXv-devel glfw glfw-devel xz-devel lzma -y && \
     yum install -y uuid.x86_64 uuid-devel.x86_64 popt-devel.x86_64 -y && \
     yum install -y numactl.x86_64 numactl-devel.x86_64 numactl-libs.x86_64 -y && \
@@ -35,15 +38,10 @@ RUN yum install -y centos-release-scl-rh && \
 
 RUN yum -y install rh-ruby23 rh-ruby23-ruby-devel rh-ruby23-rubygem* && \
     source /opt/rh/rh-ruby23/enable && \
-    yum -y install rpm-build && \
-    if [ -n "${http_proxy}" ]; then \
-    gem install -p ${http_proxy} fpm ; \
-    else \
-    gem install fpm ; \
-    fi
+    yum -y install rpm-build
 
 # Install cmake
-ARG CMAKE_VER=3.12.4
+ARG CMAKE_VER=3.15.7
 ARG CMAKE_REPO=https://cmake.org/files
 RUN wget -O - ${CMAKE_REPO}/v${CMAKE_VER%.*}/cmake-${CMAKE_VER}.tar.gz | tar xz && \
     cd cmake-${CMAKE_VER} && \

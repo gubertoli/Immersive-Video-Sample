@@ -51,7 +51,8 @@ install_tools() {
 
     if [ "${OS}" == \""Ubuntu"\" ];then
         sudo apt-get install libgmp-dev libmpfr-dev mpc libmpc-dev patch autoconf \
-            libtool automake libssl-dev libevent-dev libcurl4-openssl-dev bc -y
+            libtool automake libssl-dev libevent-dev libcurl4-openssl-dev bc \
+	     zlib1g-dev pkg-config -y
     elif [ "${OS}" == \""CentOS Linux"\" ];then
         sudo yum install gmp gmp-devel mpfr mpfr-devel libmpc libmpc-devel \
             patch autoconf libtool automake libssl-devel bc \
@@ -70,7 +71,7 @@ install_tools() {
 
     mkdir -p ../build/external && cd ../build/external
     if [ ! -f "./zlib-1.2.13.tar.gz" ];then
-        wget http://zlib.net/zlib-1.2.13.tar.gz
+        wget http://zlib.net/fossils/zlib-1.2.13.tar.gz
     fi
     tar xf zlib-1.2.13.tar.gz
     cd zlib-1.2.13 && ./configure && make -j $(nproc) && sudo make install && cd ..
@@ -102,6 +103,7 @@ install_dependencies() {
         ./install_thrift.sh
         ./install_FFmpeg.sh server
     elif [ ${TARGET} == "client" ] ; then
+        ./install_glu.sh
         ./install_glog.sh
         ./install_safestringlib.sh
         ./prebuild_player.sh

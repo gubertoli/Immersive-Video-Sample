@@ -15,7 +15,7 @@ if(NOT USE_ANDROID_NDK)
 ADD_DEFINITIONS("-g -c -fPIC -lglog -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0
                  -z noexecstack -z relro -z now -fstack-protector-strong
                  -fPIE -fPIC -pie -O2 -D_FORTIFY_SOURCE=2 -Wformat
-                 -Wformat-security -Wl,-S -Wall -Werror")
+                 -Wformat-security -Wl,-S -Wall -Werror -Wno-error=mismatched-new-delete")
 else()
 ADD_DEFINITIONS("-g -c -fPIC -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0
                    -fPIE -fPIC -O2 -D_FORTIFY_SOURCE=2 -Wformat

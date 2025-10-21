@@ -5,7 +5,7 @@ OS=$(awk -F= '/^NAME/{print $2}' /etc/os-release)
 # INSTALL DEPENDENCIES
 if [ "${OS}" == \""Ubuntu"\" ];then
     sudo apt-get install -y \
-	    lsb-core libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
+	    libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
 	    libgl1-mesa-dev libglu1-mesa-dev libgles2-mesa-dev libglm-dev \
 	    libegl1-mesa-dev pkg-config libglfw3-dev liblzma-dev
 elif [ "${OS}" == \""CentOS Linux"\" ];then

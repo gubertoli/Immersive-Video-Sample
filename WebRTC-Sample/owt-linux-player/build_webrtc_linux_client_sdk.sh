@@ -13,7 +13,7 @@ PATCHES=${ROOT}/../patches
 
 install_dependencies() {
     ${SUDO} apt-get update
-    ${SUDO} apt install -y git build-essential wget python cmake pkg-config libglib2.0-dev libgtk-3-dev libasound2-dev libpulse-dev
+    ${SUDO} apt install -y git build-essential wget python-is-python3 cmake pkg-config libglib2.0-dev libgtk-3-dev libasound2-dev libpulse-dev ninja-build
 
     # player
     ${SUDO} apt install -y yasm libgoogle-glog-dev libva-dev libglm-dev libglfw3-dev libgles2-mesa-dev libglu1-mesa-dev liblzma-dev
@@ -84,6 +84,11 @@ install_owt_client_native () {
     export PATH=${DEPS}/depot_tools:$PATH
 
     cd ${BUILD}
+
+    sudo apt install python3-venv
+    python -m venv venv
+    source venv/bin/activate
+    pip install vpython
 
     mkdir -p owt-client-native
     cd owt-client-native

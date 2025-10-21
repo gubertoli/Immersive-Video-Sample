@@ -12,6 +12,7 @@ if [ "${REPO}" != "oss" ] ; then
         git remote add origin https://github.com/FFmpeg/FFmpeg.git
         git fetch --depth 1 origin 6b6b9e593dd4d3aaf75f48d40a13ef03bdef9fdb
         git checkout FETCH_HEAD
+	git apply ../ffmpeg/patches/FFmpeg_binutils_compatibility.patch
         cd -
     fi
     if [ ! -f "${FFMPEG_REPO}/libavcodec/distributed_encoder.c" ] ; then

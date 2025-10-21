@@ -3,6 +3,9 @@ FROM centos:7.6.1810 AS build
 WORKDIR /home
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+RUN sed -i -e '/^mirrorlist/d;/^#baseurl=/{s,^#,,;s,/mirror,/vault,;}' /etc/yum.repos.d/CentOS*.repo
+RUN yum clean all && yum makecache
+
 # COMMON BUILD TOOLS
 RUN yum install -y -q bzip2 make autoconf libtool git wget ca-certificates pkg-config gcc gcc-c++ bison flex patch epel-release yum-devel libcurl-devel zlib-devel;
 
@@ -174,10 +177,14 @@ RUN wget ${NODE_REPO} && \
 
 # Fetch SVT-HEVC
 ARG SVT_HEVC_VER=v1.4.3
-ARG SVT_HEVC_REPO=https://github.com/intel/SVT-HEVC
+ARG SVT_HEVC_REPO=https://github.com/intel/SVT-HEVC.git
 
-RUN yum install -y -q patch centos-release-scl && \
-    yum install -y -q devtoolset-7
+RUN yum install -y -q centos-release-scl && \
+    sed -i -e '/^mirrorlist/d;/^#baseurl=/{s,^#,,;s,/mirror,/vault,;}' /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
+    sed -i -e '/^mirrorlist/d;/^# baseurl=/{s,^# ,,;s,/mirror,/vault,;}' /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
+    yum clean all && \
+    yum makecache && \
+    yum install -y -q patch devtoolset-7 
 
 # hadolint ignore=SC1091
 RUN git clone ${SVT_HEVC_REPO} && \
@@ -208,7 +215,7 @@ ARG LICODE_REPO=https://github.com/lynckia/licode.git
 ARG LICODE_PATCH_REPO=https://github.com/open-webrtc-toolkit/owt-server/tree/master/scripts/patches/licode/
 ARG SAFESTRINGLIB_COMMIT="245c4b8cff1d2e7338b7f3a82828fc8e72b29549"
 ARG SAFESTRINGLIB_REPO=https://github.com/intel/safestringlib.git
-ARG SCVP_VER="9ce286edf4d5976802bf488b4dd90a16ecc28c36"
+ARG SCVP_VER="54f010976edf89f95e034ea18453ee6dc5fca9de"
 ARG SCVP_REPO=https://github.com/OpenVisualCloud/Immersive-Video-Sample
 ARG WEBRTC_REPO=https://github.com/open-webrtc-toolkit/owt-deps-webrtc.git
 ARG SERVER_PATH=/home/owt-server
@@ -220,7 +227,13 @@ ARG WEBRTC_COMMIT="c2aa290cfe4f63d5bfbb6540122a5e6bf2783187"
 
 ARG FDKAAC_LIB=/home/build/usr/local/lib64
 RUN yum install -y -q python-devel glib2-devel boost-devel log4cxx-devel glog-devel gflags-devel
-RUN yum install -y -q patch centos-release-scl devtoolset-7
+RUN yum install -y -q centos-release-scl && \
+    sed -i -e '/^mirrorlist/d;/^#baseurl=/{s,^#,,;s,/mirror,/vault,;}' /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
+    sed -i -e '/^mirrorlist/d;/^# baseurl=/{s,^# ,,;s,/mirror,/vault,;}' /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
+    yum clean all && \
+    yum makecache && \
+    yum install -y -q patch devtoolset-7 
+
 ENV PYTHONIOENCODING=UTF-8
 # Install 360scvp
 # hadolint ignore=SC1091
@@ -309,6 +322,9 @@ FROM centos:7.6.1810
 LABEL Description="This is the image for owt development on CentOS 7.6"
 LABEL Vendor="Intel Corporation"
 WORKDIR /home
+
+RUN sed -i -e '/^mirrorlist/d;/^#baseurl=/{s,^#,,;s,/mirror,/vault,;}' /etc/yum.repos.d/CentOS*.repo
+RUN yum clean all && yum makecache
 
 # Prerequisites
 # Install node
