@@ -1,6 +1,6 @@
 .vscode
 build
-FFmpeg
+#FFmpeg
 player/360SCVPAPI.h
 player/MediaSource/360SCVPAPI.h
 player/MediaSource/OmafDashAccessApi.h
