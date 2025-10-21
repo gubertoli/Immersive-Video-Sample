@@ -67,26 +67,29 @@ jobs:
           
           echo "[Info] Testing image: $FINAL_IMG"
 
-          docker run --privileged -d --name omaf-test -p 8443:443 -p 8081:8080 "$FINAL_IMG"
-          
-          bash -lc "
-            set -e
-            cd /usr/local/nginx/conf && ./configure.sh CN Shanghai A B C D E@F.com && \
+          docker run --privileged -d --name omaf-test -p 8443:443 -p 8081:8080 "$FINAL_IMG" \
+          bash -lc '
+            set -e && \
+            cd /usr/local/nginx/conf && \
+            ./configure.sh CN Shanghai A B C D E@F.com && \
             /usr/local/nginx/sbin/nginx && \
-            cd /home/immersive/Sample-Videos && ./run.sh 4K VOD
-          "
+            cd /home/immersive/Sample-Videos && \
+            ./run.sh 4K VOD && \
+            exec tail -f /var/log/nginx/access.log
+          '
           
           sleep 15
-          if curl -k -fsS https://localhost:8443/ > /dev/null; then
+          if curl -k -fsS https://localhost:8443/ >/dev/null 2>&1; then
             echo "[OK] Container is running with HTTPS"
+            docker rm -f omaf-test
+            exit 0
           else
             echo "[Error] Container did not respond."
             docker ps -a || true
             docker logs omaf-test || true
-            docker stop omaf-test || true
+            docker rm -f omaf-test || true
             exit 1
           fi
-          docker stop omaf-test
 
       - name: Retag & Push built image
         run: |
