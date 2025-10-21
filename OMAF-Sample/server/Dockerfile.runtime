@@ -1,4 +1,4 @@
-ARG base_image
+ARG base_image=immersive-server-base:v1.12
 FROM ${base_image} AS base
 
 RUN cd /home/immersive/ && \

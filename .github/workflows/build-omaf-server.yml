@@ -45,6 +45,7 @@ jobs:
           cd build
           cmake ..
           make build -j"$(nproc)"
+          docker image ls
 
       - name: Compute tags
         id: tags
@@ -54,8 +55,9 @@ jobs:
           echo "OWNER_LC=${OWNER_LC}" >> $GITHUB_ENV
           echo "IMAGE_URI=ghcr.io/${OWNER_LC}/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
       
-      - name: Test image
+      - name: Smoke Test
         run: |
+          set -euo pipefail
           FINAL_IMG="$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E '^immersive-server:v[0-9]+\.[0-9]+' | head -n1)"
           if [ -z "$FINAL_IMG" ]; then
             echo "[Error] Built image not found."
@@ -63,12 +65,23 @@ jobs:
             exit 1
           fi
           
-          docker run -d --rm -p 8443:443 --name omaf-test "$FINAL_IMG"
+          echo "[Info] Testing image: $FINAL_IMG"
+
+          docker run --privileged -d --name omaf-test -p 8443:443 -p 8081:8080 "$FINAL_IMG"
+          
+          bash -ls "
+            set -e
+            cd /usr/local/nginx/conf && ./configure.sh CN Shanghai A B C D E@F.com && \
+            /usr/local/nginx/sbin/nginx && \
+            cd /home/immersive/Sample-Videos && ./run.sh 4K VOD
+          "
+          
           sleep 15
           if curl -k -fsS https://localhost:8443/ > /dev/null; then
             echo "[OK] Container is running with HTTPS"
           else
             echo "[Error] Container did not respond."
+            docker ps -a || true
             docker logs omaf-test || true
             docker stop omaf-test || true
             exit 1
