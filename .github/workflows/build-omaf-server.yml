@@ -36,7 +36,7 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends cmake make git build-essential
+          sudo apt-get install -y --no-install-recommends cmake make git build-essential curl
 
       - name: Build OMAF Server via CMake (creates docker image)
         working-directory: ${{ env.REPO_SUBDIR }}
@@ -69,7 +69,7 @@ jobs:
 
           docker run --privileged -d --name omaf-test -p 8443:443 -p 8081:8080 "$FINAL_IMG"
           
-          bash -ls "
+          bash -lc "
             set -e
             cd /usr/local/nginx/conf && ./configure.sh CN Shanghai A B C D E@F.com && \
             /usr/local/nginx/sbin/nginx && \
