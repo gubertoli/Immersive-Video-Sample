@@ -11,25 +11,25 @@ RUN cd /home/immersive/ && \
 
 FROM centos:7.6.1810
 
-USER 10001
+USER root
 WORKDIR /home/immersive/
 ARG WORKDIR=/home/immersive/
 
 COPY --from=base /etc/passwd /etc/group /etc/
-COPY --chown=10001:10001 --from=base ${WORKDIR}/Sample-Videos ${WORKDIR}/Sample-Videos
-COPY --chown=10001:10001 --from=base ${WORKDIR}/deps/lib64 /usr/lib64
-COPY --chown=10001:10001 --from=base ${WORKDIR}/deps/usr /usr/
-COPY --chown=10001:10001 --from=base /usr/local/nginx /usr/local/nginx
-COPY --chown=10001:10001 --from=base /usr/local/lib/libHevcVideoStreamProcess.so /usr/local/lib/
-COPY --chown=10001:10001 --from=base /usr/local/lib/libHighResPlusFullLowResPacking.so /usr/local/lib/
-COPY --chown=10001:10001 --from=base /usr/local/lib/libSegmentWriter.so /usr/local/lib/
-COPY --chown=10001:10001 --from=base /usr/local/lib/libMPDWriter.so /usr/local/lib/
-COPY --chown=10001:10001 --from=base /usr/lib64/libnuma.so.1.0.0 /usr/lib64/
-COPY --chown=10001:10001 --from=base /usr/lib64/libnuma.so.1 /usr/lib64/
-COPY --chown=10001:10001 --from=base /usr/bin/numactl /usr/bin/
-COPY --chown=10001:10001 --from=base /usr/bin/bc /usr/bin/
-COPY --chown=10001:10001 --from=base /usr/bin/openssl /usr/bin/
-COPY --chown=10001:10001 --from=base /root/WorkerServer /root/
+COPY --from=base ${WORKDIR}/Sample-Videos ${WORKDIR}/Sample-Videos
+COPY --from=base ${WORKDIR}/deps/lib64 /usr/lib64
+COPY --from=base ${WORKDIR}/deps/usr /usr/
+COPY --from=base /usr/local/nginx /usr/local/nginx
+COPY --from=base /usr/local/lib/libHevcVideoStreamProcess.so /usr/local/lib/
+COPY --from=base /usr/local/lib/libHighResPlusFullLowResPacking.so /usr/local/lib/
+COPY --from=base /usr/local/lib/libSegmentWriter.so /usr/local/lib/
+COPY --from=base /usr/local/lib/libMPDWriter.so /usr/local/lib/
+COPY --from=base /usr/lib64/libnuma.so.1.0.0 /usr/lib64/
+COPY --from=base /usr/lib64/libnuma.so.1 /usr/lib64/
+COPY --from=base /usr/bin/numactl /usr/bin/
+COPY --from=base /usr/bin/bc /usr/bin/
+COPY --from=base /usr/bin/openssl /usr/bin/
+COPY --from=base /root/WorkerServer /root/
 
 EXPOSE 443
 EXPOSE 8080
