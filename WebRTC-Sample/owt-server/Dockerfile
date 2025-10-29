@@ -18,6 +18,7 @@ RUN yum update -y && \
     unzip \
     sudo \
     python \
+    ffmpeg-devel \
     && yum clean all
 
 RUN echo "Installing centos-release-scl-rh..." && \
