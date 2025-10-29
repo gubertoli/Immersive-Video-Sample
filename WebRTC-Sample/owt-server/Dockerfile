@@ -24,17 +24,34 @@ RUN echo "Installing centos-release-scl-rh..." && \
     yum install -y centos-release-scl-rh && \
     yum clean all
 
-RUN echo "Applying EOL fix to SCLo repositories..." && \
+RUN echo "Contents of /etc/yum.repos.d/ after installing SCL release package:" && \
+    ls -l /etc/yum.repos.d/
+
+RUN echo "Applying EOL fix to SCLo RH repository..." && \
     cd /etc/yum.repos.d/ && \
-    sed -i 's/mirrorlist/#mirrorlist/g' CentOS-SCLo-scl.repo CentOS-SCLo-scl-rh.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-SCLo-scl.repo CentOS-SCLo-scl-rh.repo && \
+    if [ -f CentOS-SCLo-scl-rh.repo ]; then \
+        sed -i 's/mirrorlist/#mirrorlist/g' CentOS-SCLo-scl-rh.repo && \
+        sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-SCLo-scl-rh.repo && \
+        echo "CentOS-SCLo-scl-rh.repo fixed." ; \
+    else \
+        echo "Warning: CentOS-SCLo-scl-rh.repo not found after installing centos-release-scl-rh." ; \
+    fi && \
+    if [ -f CentOS-SCLo-scl.repo ]; then \
+        sed -i 's/mirrorlist/#mirrorlist/g' CentOS-SCLo-scl.repo && \
+        sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-SCLo-scl.repo && \
+        echo "CentOS-SCLo-scl.repo fixed." ; \
+    fi && \
     yum clean metadata && \
     yum clean all && \
     echo "SCLo repo EOL fix applied."
 
 RUN echo "Importing SCLo GPG key..." && \
-    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-SCLo && \
-    echo "SCLo GPG key imported."
+    if [ -f /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-SCLo ]; then \
+        rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-SCLo && \
+        echo "SCLo GPG key imported." ; \
+    else \
+        echo "Warning: SCLo GPG key file not found. Skipping import." ; \
+    fi
 
 RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
     yum install -y nodejs && \
