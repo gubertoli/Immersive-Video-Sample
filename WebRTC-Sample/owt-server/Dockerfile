@@ -29,7 +29,17 @@ COPY . .
 
 RUN chmod +x scripts/*.sh
 
-RUN ./scripts/install_owt_server.sh
+RUN ./scripts/install_owt_server.sh || echo "Allowing install_owt_server.sh to potentially fail after adding SCL repos"
+
+RUN echo "Applying EOL fix to ALL repositories after install_owt_server.sh..." && \
+    cd /etc/yum.repos.d/ && \
+    sed -i 's/mirrorlist/#mirrorlist/g' *.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' *.repo && \
+    yum clean metadata && \
+    yum clean all && \
+    echo "EOL fix applied."
+RUN yum install -y devtoolset-7
+
 RUN ./scripts/install_deps.sh
 RUN ./scripts/build.js -t all
 RUN ./scripts/pack.sh

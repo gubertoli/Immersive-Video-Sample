@@ -16,14 +16,6 @@ export_node() {
 install_devtoolset() {
     sudo yum install -y docbook2X
     sudo yum install -y centos-release-scl
-    echo "Applying EOL fix to SCLo repositories..."
-    pushd /etc/yum.repos.d/ > /dev/null
-    sudo sed -i 's/mirrorlist/#mirrorlist/g' *.repo
-    sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' *.repo
-    popd > /dev/null
-    sudo yum clean metadata
-    sudo yum clean all
-    echo "EOL fix applied."
     sudo yum install -y devtoolset-7
     source /opt/rh/devtoolset-7/enable
 }
