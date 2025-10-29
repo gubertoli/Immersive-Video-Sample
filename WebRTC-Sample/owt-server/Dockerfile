@@ -27,7 +27,7 @@ RUN echo "Manually creating fixed SCLo repo files..." && \
     echo 'baseurl=http://vault.centos.org/centos/7/sclo/x86_64/sclo/' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
     echo 'gpgcheck=1' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
     echo 'enabled=1' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
-    echo 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-SCLo' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
+    echo 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
     \
     echo '[centos-sclo-rh]' > /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
     echo 'name=CentOS-7 - SCLo rh' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
@@ -35,9 +35,8 @@ RUN echo "Manually creating fixed SCLo repo files..." && \
     echo 'baseurl=http://vault.centos.org/centos/7/sclo/x86_64/rh/' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
     echo 'gpgcheck=1' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
     echo 'enabled=1' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
-    echo 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-SCLo' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
+    echo 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
     \
-    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-SCLo && \
     yum clean all
 
 RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
