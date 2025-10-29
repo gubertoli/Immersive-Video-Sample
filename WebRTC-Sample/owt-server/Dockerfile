@@ -20,24 +20,21 @@ RUN yum update -y && \
     python \
     && yum clean all
 
-RUN echo "Manually creating fixed SCLo repo files..." && \
-    echo '[centos-sclo-sclo]' > /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
-    echo 'name=CentOS-7 - SCLo sclo' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
-    echo '#mirrorlist=http://mirrorlist.centos.org/?arch=$basearch&release=7&repo=sclo-sclo' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
-    echo 'baseurl=http://vault.centos.org/centos/7/sclo/x86_64/sclo/' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
-    echo 'gpgcheck=1' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
-    echo 'enabled=1' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
-    echo 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7' >> /etc/yum.repos.d/CentOS-SCLo-scl.repo && \
-    \
-    echo '[centos-sclo-rh]' > /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
-    echo 'name=CentOS-7 - SCLo rh' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
-    echo '#mirrorlist=http://mirrorlist.centos.org/?arch=$basearch&release=7&repo=sclo-rh' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
-    echo 'baseurl=http://vault.centos.org/centos/7/sclo/x86_64/rh/' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
-    echo 'gpgcheck=1' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
-    echo 'enabled=1' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
-    echo 'gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-7' >> /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && \
-    \
+RUN echo "Installing centos-release-scl-rh..." && \
+    yum install -y centos-release-scl-rh && \
     yum clean all
+
+RUN echo "Applying EOL fix to SCLo repositories..." && \
+    cd /etc/yum.repos.d/ && \
+    sed -i 's/mirrorlist/#mirrorlist/g' CentOS-SCLo-scl.repo CentOS-SCLo-scl-rh.repo && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-SCLo-scl.repo CentOS-SCLo-scl-rh.repo && \
+    yum clean metadata && \
+    yum clean all && \
+    echo "SCLo repo EOL fix applied."
+
+RUN echo "Importing SCLo GPG key..." && \
+    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-SIG-SCLo && \
+    echo "SCLo GPG key imported."
 
 RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
     yum install -y nodejs && \
@@ -65,6 +62,7 @@ RUN cd /etc/yum.repos.d/ && \
 RUN yum update -y && \
     yum install -y epel-release && \
     yum clean all
+
 RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
     yum install -y nodejs && \
     yum clean all
