@@ -10,9 +10,10 @@ permissions:
   packages: write
 
 env:
-  BUILT_IMAGE_NAME: owt-server
+  BUILT_IMAGE_NAME: xeon-centos76-service-owt-immersive
+  BUILT_IMAGE_TAG: latest
   IMAGE_NAME: webrtc-server
-  IMAGE_VERSION_SUFFIX: -patched
+  IMAGE_VERSION_SUFFIX: patched
   REPO_SUBDIR: WebRTC-Sample/owt-server
 
 jobs:
@@ -61,12 +62,14 @@ jobs:
         working-directory: ${{ env.REPO_SUBDIR }}/build
         run: |
           set -euo pipefail
+          
           echo "[Info] Starting server using 'make start_owt_immersive_4k'..."
           make start_owt_immersive_4k
-
+          
+          # The container name is 'owt-immersive' (defined in CMakeLists.txt)
           echo "[Info] Waiting for container 'owt-immersive' to start (15s)..."
           sleep 15
-
+          
           if curl -k -fsS https://localhost:8443/ >/dev/null 2>&1; then
             echo "[OK] Container is running on https://localhost:8443"
             docker rm -f owt-immersive
@@ -81,18 +84,17 @@ jobs:
 
       - name: Retag & Push built image
         run: |
-          BUILT_IMG_TAG_REGEX="^${{ env.BUILT_IMAGE_NAME }}:v[0-9]+\.[0-9]+\.[0-9]+$"
-          FINAL_IMG="$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E "$BUILT_IMG_TAG_REGEX" | head -n1)"
-
-          if [ -z "$FINAL_IMG" ]; then
-            echo "Error: Built image matching regex '$BUILT_IMG_TAG_REGEX' not found."
+          FINAL_IMG="${{ env.BUILT_IMAGE_NAME }}:${{ env.BUILT_IMAGE_TAG }}"
+          
+          if ! docker image inspect "$FINAL_IMG" &> /dev/null; then
+            echo "Error: Built image '$FINAL_IMG' not found."
             docker image ls
             exit 1
           fi
 
-          ORIGINAL_VERSION=$(echo "$FINAL_IMG" | cut -d':' -f2)
-          FINAL_TAG="${ORIGINAL_VERSION}${IMAGE_VERSION_SUFFIX}"
-
+          FINAL_TAG="${{ env.BUILT_IMAGE_TAG }}-${{ env.IMAGE_VERSION_SUFFIX }}"
+          
+          # Save for the Summary step
           echo "FINAL_TAG=${FINAL_TAG}" >> $GITHUB_ENV
 
           echo "Found built image: $FINAL_IMG"
