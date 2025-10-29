@@ -20,7 +20,7 @@ RUN yum update -y && \
     python \
     && yum clean all
 
-RUN curl -sL https://rpm.nodesource.com/setup_18.x | bash - && \
+RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
     yum install -y nodejs && \
     yum clean all
 
@@ -44,7 +44,7 @@ RUN cd /etc/yum.repos.d/ && \
 RUN yum update -y && \
     yum install -y epel-release && \
     yum clean all
-RUN curl -sL https://rpm.nodesource.com/setup_18.x | bash - && \
+RUN curl -sL https://rpm.nodesource.com/setup_14.x | bash - && \
     yum install -y nodejs && \
     yum clean all
 
