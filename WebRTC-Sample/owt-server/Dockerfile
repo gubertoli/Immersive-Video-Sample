@@ -1,8 +1,8 @@
 FROM centos:7.6.1810 AS builder
 
 RUN cd /etc/yum.repos.d/ && \
-    sed -i 's/mirrorlist/#mirrorlist/g' CentOS-Base.repo CentOS-CR.repo CentOS-Debuginfo.repo CentOS-fasttrack.repo CentOS-Media.repo CentOS-Sources.repo CentOS-Vault.repo CentOS-SCLo-scl.repo CentOS-SCLo-scl-rh.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-Base.repo CentOS-CR.repo CentOS-Debuginfo.repo CentOS-fasttrack.repo CentOS-Media.repo CentOS-Sources.repo CentOS-Vault.repo CentOS-SCLo-scl.repo CentOS-SCLo-scl-rh.repo && \
+    sed -i 's/mirrorlist/#mirrorlist/g' CentOS-* && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-* && \
     yum clean all
 
 RUN yum update -y && \
@@ -37,8 +37,8 @@ RUN ./scripts/pack.sh
 FROM centos:7.6.1810
 
 RUN cd /etc/yum.repos.d/ && \
-    sed -i 's/mirrorlist/#mirrorlist/g' CentOS-Base.repo CentOS-CR.repo CentOS-Debuginfo.repo CentOS-fasttrack.repo CentOS-Media.repo CentOS-Sources.repo CentOS-Vault.repo CentOS-SCLo-scl.repo CentOS-SCLo-scl-rh.repo && \
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-Base.repo CentOS-CR.repo CentOS-Debuginfo.repo CentOS-fasttrack.repo CentOS-Media.repo CentOS-Sources.repo CentOS-Vault.repo CentOS-SCLo-scl.repo CentOS-SCLo-scl-rh.repo && \
+    sed -i 's/mirrorlist/#mirrorlist/g' CentOS-* && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-* && \
     yum clean all
 
 RUN yum update -y && \
