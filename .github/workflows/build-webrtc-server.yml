@@ -1,0 +1,113 @@
+name: Build & Push WebRTC Server (patched)
+
+on:
+  push:
+    branches: [ "patch" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: webrtc-server
+  IMAGE_VERSION: v1.12-patched
+  REPO_SUBDIR: WebRTC-Sample/owt-server
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cmake make git build-essential curl
+
+      - name: Build WebRTC Server via CMake (creates docker image)
+        working-directory: ${{ env.REPO_SUBDIR }}
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make -j"$(nproc)"
+          docker image ls
+
+      - name: Compute tags
+        id: tags
+        run: | 
+          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
+          OWNER_LC="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          echo "OWNER_LC=${OWNER_LC}" >> $GITHUB_ENV
+          echo "IMAGE_URI=ghcr.io/${OWNER_LC}/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
+      
+      - name: Smoke Test
+        run: |
+          set -euo pipefail
+          FINAL_IMG="$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E '^owt-immersive:v[0-9]+\.[0-9]+' | head -n1)"
+          if [ -z "$FINAL_IMG" ]; then
+            echo "[Error] Built image not found."
+            docker image ls
+            exit 1
+          fi
+          
+          echo "[Info] Testing image: $FINAL_IMG"
+
+          docker run --privileged -d --name omaf-test -p 8443:443 -p 8081:8080 "$FINAL_IMG" \
+          bash -lc '
+            set -e && \
+            cd /usr/local/nginx/conf && \
+            ./configure.sh CN Shanghai A B C D E@F.com && \
+            /usr/local/nginx/sbin/nginx && \
+            cd /home/immersive/Sample-Videos && \
+            ./run.sh 4K VOD && \
+            exec tail -f /var/log/nginx/access.log
+          '
+          
+          sleep 15
+          if curl -k -fsS https://localhost:8443/ >/dev/null 2>&1; then
+            echo "[OK] Container is running with HTTPS"
+            docker rm -f omaf-test
+            exit 0
+          else
+            echo "[Error] Container did not respond."
+            docker ps -a || true
+            docker logs omaf-test || true
+            docker rm -f omaf-test || true
+            exit 1
+          fi
+
+      - name: Retag & Push built image
+        run: |
+          FINAL_IMG="$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E '^immersive-server:v[0-9]+\.[0-9]+' | head -n1)"
+          if [ -z "$FINAL_IMG" ]; then
+            echo "Error: Built image not found."
+            docker image ls
+            exit 1
+          fi
+          
+          docker tag "$FINAL_IMG" "${IMAGE_URI}:${IMAGE_VERSION}"
+          docker tag "$FINAL_IMG" "${IMAGE_URI}:${IMAGE_VERSION}-${SHORT_SHA}"
+          
+          docker push "${IMAGE_URI}:${IMAGE_VERSION}"
+          docker push "${IMAGE_URI}:${IMAGE_VERSION}-${SHORT_SHA}"
+
+      - name: Summary
+        run: |
+          echo "[Success] Image published:"
+          echo "   - ${IMAGE_URI}:${IMAGE_VERSION}"
+          echo "   - ${IMAGE_URI}:${IMAGE_VERSION}-${SHORT_SHA}"
