@@ -1,5 +1,10 @@
 FROM centos:7.6.1810 AS builder
 
+RUN cd /etc/yum.repos.d/ && \
+    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* && \
+    yum clean all
+
 RUN yum update -y && \
     yum install -y \
     epel-release \
@@ -30,6 +35,11 @@ RUN ./scripts/build.js -t all
 RUN ./scripts/pack.sh
 
 FROM centos:7.6.1810
+
+RUN cd /etc/yum.repos.d/ && \
+    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* && \
+    yum clean all
 
 RUN yum update -y && \
     yum install -y epel-release && \
