@@ -10,8 +10,9 @@ permissions:
   packages: write
 
 env:
+  BUILT_IMAGE_NAME: owt-server
   IMAGE_NAME: webrtc-server
-  IMAGE_VERSION: v1.12-patched
+  IMAGE_VERSION_SUFFIX: -patched
   REPO_SUBDIR: WebRTC-Sample/owt-server
 
 jobs:
@@ -45,6 +46,7 @@ jobs:
           cd build
           cmake ..
           make -j"$(nproc)"
+          echo "--- Built Docker Images ---"
           docker image ls
 
       - name: Compute tags
@@ -56,58 +58,54 @@ jobs:
           echo "IMAGE_URI=ghcr.io/${OWNER_LC}/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
       
       - name: Smoke Test
+        working-directory: ${{ env.REPO_SUBDIR }}/build
         run: |
           set -euo pipefail
-          FINAL_IMG="$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E '^owt-immersive:v[0-9]+\.[0-9]+' | head -n1)"
-          if [ -z "$FINAL_IMG" ]; then
-            echo "[Error] Built image not found."
-            docker image ls
-            exit 1
-          fi
-          
-          echo "[Info] Testing image: $FINAL_IMG"
+          echo "[Info] Starting server using 'make start_owt_immersive_4k'..."
+          make start_owt_immersive_4k
 
-          docker run --privileged -d --name omaf-test -p 8443:443 -p 8081:8080 "$FINAL_IMG" \
-          bash -lc '
-            set -e && \
-            cd /usr/local/nginx/conf && \
-            ./configure.sh CN Shanghai A B C D E@F.com && \
-            /usr/local/nginx/sbin/nginx && \
-            cd /home/immersive/Sample-Videos && \
-            ./run.sh 4K VOD && \
-            exec tail -f /var/log/nginx/access.log
-          '
-          
+          echo "[Info] Waiting for container 'owt-immersive' to start (15s)..."
           sleep 15
+
           if curl -k -fsS https://localhost:8443/ >/dev/null 2>&1; then
-            echo "[OK] Container is running with HTTPS"
-            docker rm -f omaf-test
+            echo "[OK] Container is running on https://localhost:8443"
+            docker rm -f owt-immersive
             exit 0
           else
-            echo "[Error] Container did not respond."
+            echo "[Error] Container did not respond on https://localhost:8443/"
             docker ps -a || true
-            docker logs omaf-test || true
-            docker rm -f omaf-test || true
+            docker logs owt-immersive || true
+            docker rm -f owt-immersive || true
             exit 1
           fi
 
       - name: Retag & Push built image
         run: |
-          FINAL_IMG="$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E '^immersive-server:v[0-9]+\.[0-9]+' | head -n1)"
+          BUILT_IMG_TAG_REGEX="^${{ env.BUILT_IMAGE_NAME }}:v[0-9]+\.[0-9]+\.[0-9]+$"
+          FINAL_IMG="$(docker image ls --format '{{.Repository}}:{{.Tag}}' | grep -E "$BUILT_IMG_TAG_REGEX" | head -n1)"
+
           if [ -z "$FINAL_IMG" ]; then
-            echo "Error: Built image not found."
+            echo "Error: Built image matching regex '$BUILT_IMG_TAG_REGEX' not found."
             docker image ls
             exit 1
           fi
+
+          ORIGINAL_VERSION=$(echo "$FINAL_IMG" | cut -d':' -f2)
+          FINAL_TAG="${ORIGINAL_VERSION}${IMAGE_VERSION_SUFFIX}"
+
+          echo "FINAL_TAG=${FINAL_TAG}" >> $GITHUB_ENV
+
+          echo "Found built image: $FINAL_IMG"
+          echo "Tagging for push as: ${IMAGE_URI}:${FINAL_TAG}"
           
-          docker tag "$FINAL_IMG" "${IMAGE_URI}:${IMAGE_VERSION}"
-          docker tag "$FINAL_IMG" "${IMAGE_URI}:${IMAGE_VERSION}-${SHORT_SHA}"
+          docker tag "$FINAL_IMG" "${IMAGE_URI}:${FINAL_TAG}"
+          docker tag "$FINAL_IMG" "${IMAGE_URI}:${FINAL_TAG}-${SHORT_SHA}"
           
-          docker push "${IMAGE_URI}:${IMAGE_VERSION}"
-          docker push "${IMAGE_URI}:${IMAGE_VERSION}-${SHORT_SHA}"
+          docker push "${IMAGE_URI}:${FINAL_TAG}"
+          docker push "${IMAGE_URI}:${FINAL_TAG}-${SHORT_SHA}"
 
       - name: Summary
         run: |
           echo "[Success] Image published:"
-          echo "   - ${IMAGE_URI}:${IMAGE_VERSION}"
-          echo "   - ${IMAGE_URI}:${IMAGE_VERSION}-${SHORT_SHA}"
+          echo "   - ${IMAGE_URI}:${FINAL_TAG}"
+          echo "   - ${IMAGE_URI}:${FINAL_TAG}-${SHORT_SHA}"
