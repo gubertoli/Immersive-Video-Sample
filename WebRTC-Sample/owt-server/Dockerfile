@@ -30,6 +30,11 @@ COPY . .
 RUN chmod +x scripts/*.sh
 
 RUN ./scripts/install_owt_server.sh
+RUN cd /etc/yum.repos.d/ && \
+    sed -i 's/mirrorlist/#mirrorlist/g' CentOS-* && \
+    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-* && \
+    echo "Fixed repos again after install_owt_server.sh" && \
+    yum clean all
 RUN ./scripts/install_deps.sh
 RUN ./scripts/build.js -t all
 RUN ./scripts/pack.sh
