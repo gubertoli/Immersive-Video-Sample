@@ -51,7 +51,9 @@ install_tools() {
 
     if [ "${OS}" == \""Ubuntu"\" ];then
         sudo apt-get install libgmp-dev libmpfr-dev mpc libmpc-dev patch autoconf \
-            libtool automake libssl-dev libevent-dev libcurl4-openssl-dev bc -y
+            libtool automake libssl-dev libevent-dev libcurl4-openssl-dev bc \
+            libglu1-mesa-dev libglm-dev libglfw3-dev \
+            libavcodec-dev libavformat-dev libswscale-dev libavfilter-dev libavdevice-dev libavutil-dev -y
     elif [ "${OS}" == \""CentOS Linux"\" ];then
         sudo yum install gmp gmp-devel mpfr mpfr-devel libmpc libmpc-devel \
             patch autoconf libtool automake libssl-devel bc \

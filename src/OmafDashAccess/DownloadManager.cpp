@@ -196,7 +196,7 @@ int DownloadManager::enum_directory(const char *dir, bool enum_directory, enum_d
 
   if (!dir || !enumDirFct) return ERROR_INVALID;
 
-  strncpy((char *)path, dir, strlen(dir) + 1);
+  strcpy((char *)path, dir);
   if (path[strlen((const char *)path) - 1] != '\\') strncat((char *)path, "\\", strlen("\\"));
 
   currentDir = opendir((char *)path);
@@ -213,9 +213,9 @@ int DownloadManager::enum_directory(const char *dir, bool enum_directory, enum_d
       if (!strstr(filter, separate + 1)) goto end;
     }
 
-    strncpy((char *)itemPath, (const char *)path, strlen((const char *)path) + 1);
+    strcpy((char *)itemPath, (const char *)path);
     if (strlen(currentFile->d_name) < 1024 - strlen((const char *)itemPath))
-      strncat((char *)itemPath, currentFile->d_name, sizeof(currentFile->d_name));
+      strcat((char *)itemPath, currentFile->d_name);
     if (stat((const char *)itemPath, &st) != 0) goto end;
     if (enum_directory && ((st.st_mode & S_IFMT) != S_IFDIR)) {
       goto end;

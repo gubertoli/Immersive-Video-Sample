@@ -377,7 +377,7 @@ inline void OmafDashSegmentHttpClientImpl::setStatisticsWindows(int32_t time_win
 };
 inline std::unique_ptr<OmafDashSegmentClient::PerfStatistics> OmafDashSegmentHttpClientImpl::statistics(void) noexcept {
   if (perf_stats_ != nullptr) {
-    return std::move(perf_stats_->statistics());
+    return perf_stats_->statistics();
   }
   return nullptr;
 };
@@ -424,7 +424,7 @@ OmafDownloadTask::Ptr OmafDashSegmentHttpClientImpl::fetchReadyTask(void) noexce
         if (tl->tasks_[i].size()) {
           auto task = std::move(tl->tasks_[i].front());
           tl->tasks_[i].pop_front();
-          return std::move(task);
+          return task;
         }
       }
       // no new task list with new timeline ready, then wait

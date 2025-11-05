@@ -2221,7 +2221,7 @@ std::shared_ptr<TrackInformation> OmafSegmentNode::findTrackInformation(std::sha
     }
     track_infos.clear();
 
-    return std::move(track_info);
+    return track_info;
   } catch (const std::exception &ex) {
     OMAF_LOG(LOG_ERROR, "Exception when find the track information! ex: %s\n", ex.what());
     return nullptr;

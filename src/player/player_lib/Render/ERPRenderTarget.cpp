@@ -35,7 +35,7 @@
 #include "RenderContext.h"
 
 #include <GL/glu.h>
-#include <GL/glu_mangle.h>
+//#include <GL/glu_mangle.h>
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include <GL/glext.h>

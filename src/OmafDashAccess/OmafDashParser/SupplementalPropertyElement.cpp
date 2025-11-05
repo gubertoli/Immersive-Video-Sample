@@ -112,7 +112,7 @@ ODStatus SupplementalPropertyElement::SetSphereRegionQuality(SphRegionQualityEle
 
     CheckNullPtr_PrintLog_ReturnStatus(m_srqr, "The input SphereQuality is null.\n", LOG_ERROR, OD_STATUS_INVALID);
 
-    memset(m_srqr, 0 , sizeof(SphereQuality));
+    *m_srqr = VCD::OMAF::SphereQuality{};
     m_srqr->shape_type = sphRegionQuality->GetShapeType();
     m_srqr->remaining_area_flag = sphRegionQuality->GetRemainingAreaFlag();
     m_srqr->quality_ranking_local = sphRegionQuality->GetQualityRankingLocalFlag();

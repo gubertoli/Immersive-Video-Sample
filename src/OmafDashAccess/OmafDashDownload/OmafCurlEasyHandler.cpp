@@ -404,7 +404,7 @@ OmafCurlEasyDownloader::Ptr OmafCurlEasyDownloaderPool::pop() noexcept {
         OmafCurlEasyDownloader::Ptr downloader = std::move(easy_downloader_pool_.front());
         downloader->params(curl_params_);
         easy_downloader_pool_.pop();
-        return std::move(downloader);
+        return downloader;
       }
       if (downloader_count_ >= max_downloader_) {
         return nullptr;
@@ -413,7 +413,7 @@ OmafCurlEasyDownloader::Ptr OmafCurlEasyDownloaderPool::pop() noexcept {
     // 2. create a new downloader
     OmafCurlEasyDownloader::Ptr downloader = std::make_shared<OmafCurlEasyDownloader>();
     if (ERROR_NONE == downloader->init(curl_params_)) {
-      return std::move(downloader);
+      return downloader;
     }
     return nullptr;
   } catch (const std::exception &ex) {

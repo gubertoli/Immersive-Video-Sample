@@ -139,7 +139,7 @@ public:
     void operator()(T* ptr) const
     {
         ptr->~T();
-        free(ptr);
+        delete ptr;
     }
 };
 

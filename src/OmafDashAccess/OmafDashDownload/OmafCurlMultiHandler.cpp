@@ -202,7 +202,7 @@ OMAF_STATUS OmafCurlMultiDownloader::createTransfer(OmafDownloadTask::Ptr task, 
       return ERROR_INVALID;
     }
     // create data downloader
-    OmafCurlEasyDownloader::Ptr pDownloader = std::move(downloader_pool_->pop());
+    OmafCurlEasyDownloader::Ptr pDownloader = downloader_pool_->pop();
     if (pDownloader.get() == nullptr) {
       OMAF_LOG(LOG_ERROR, "Failed to create the curl easy downloader!\n");
       return ERROR_NULL_PTR;
